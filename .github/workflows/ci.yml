@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  # Check Go Backend
+  test-backend:
+    name: Go Test & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          check-latest: true
+
+      - name: Install dependencies
+        run: go mod download
+
+      # Verify code formatting
+      - name: Verify gofmt
+        run: |
+          if [ -n "$(gofmt -l .)" ]; then
+            echo "Go code is not formatted:"
+            gofmt -d .
+            exit 1
+          fi
+
+      # Run Vet
+      - name: Go Vet
+        run: go vet ./...
+
+      # Run Tests
+      - name: Go Test
+        run: go test -v ./...
+
+  # Check React Frontend
+  test-frontend:
+    name: Frontend Test & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci || npm install
+
+      # Linting (if configured in package.json)
+      - name: Lint Frontend
+        working-directory: ./frontend
+        run: npm run lint --if-present
+
+      # Testing (if configured in package.json)
+      - name: Test Frontend
+        working-directory: ./frontend
+        run: npm test --if-present
+
+  # Verify Wails Build (Dry Run)
+  build-verify:
+    name: Verify Wails Build
+    needs: [test-backend, test-frontend]
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # Linux specific dependencies for Wails
+      - name: Install Linux Dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+      # Dry run build (skip actually generating the full binary to save time, or just build it)
+      # Using 'wails build -skipbindings' might be faster, but let's do a full build to be safe.
+      - name: Build
+        run: wails build

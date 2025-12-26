@@ -1,0 +1,17 @@
+{
+  "name": "new-api-desktop",
+  "version": "1.0.0",
+  "author": {
+    "name": "User",
+    "email": "user@example.com"
+  },
+  "description": "New-API Desktop Application",
+  "website": "",
+  "github": "",
+  "wails_version": "2.0.0",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "output_filename": "new-api-desktop"
+}
