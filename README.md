@@ -1,63 +1,59 @@
-<div align="center">
+# New-API Desktop
 
-![new-api](/frontend/public/logo.png)
+This project is a desktop GUI application for [new-api](https://github.com/QuantumNous/new-api), built using [Wails](https://wails.io).
 
-# New API Desktop
+It is designed as a single-user local gateway for LLM services, running completely on your machine.
 
-**New API Desktop** is a single-user local LLM gateway application, based on the powerful [New API](https://github.com/QuantumNous/new-api) server.
+## Features
 
-</div>
+- **Desktop GUI**: Manage channels, keys, and logs through a native application window (Windows, macOS, Linux).
+- **Local API Server**: Embeds the full `new-api` backend, exposing an OpenAI-compatible API at `http://localhost:3000`.
+- **Single User Friendly**:
+    - Data stored in SQLite in your user configuration directory (no external database server required).
+    - Simplified configuration for local usage.
+    - Persistent "root" session (or simplified login) optimized for personal use.
 
-## 🚀 Features
+## Architecture
 
-- **Local & Private**: Runs on your desktop. Your data (keys, logs) stays on your machine.
-- **SQLite Database**: Uses a local SQLite database in your user configuration directory.
-- **Cross-Platform**: Built with Wails (Go + React), runs on Windows, macOS, and Linux.
-- **LLM Gateway**: Manages channels, keys, and usage logs for various LLM providers (OpenAI, Claude, Gemini, etc.).
+- **Shell**: [Wails](https://wails.io) (Go + Web) handles the window, system tray, and OS interactions.
+- **Backend**: The core `new-api` logic runs as an embedded service within the application binary.
+- **Frontend**: The existing React dashboard, adapted to run within the desktop shell using `HashRouter` and configured to communicate with the local backend.
 
-## 📦 Installation
+## Getting Started
 
-### From Source
+### Prerequisites
 
-1. **Prerequisites**:
-   - Go 1.21+
-   - Node.js 18+
-   - Wails CLI (`go install github.com/wailsapp/wails/v2/cmd/wails@latest`)
+- [Go](https://go.dev/) (1.18+)
+- [Node.js](https://nodejs.org/) (npm)
 
-2. **Build**:
+### Installation
+
+1. Install the Wails CLI:
    ```bash
-   git clone https://github.com/QuantumNous/new-api-desktop.git
-   cd new-api-desktop
+   go install github.com/wailsapp/wails/v2/cmd/wails@latest
+   ```
+
+2. Build the project:
+   ```bash
    wails build
    ```
 
-3. **Run**:
-   The binary will be in `build/bin`.
+3. Run the application:
+   - On Windows: `build/bin/new-api-desktop.exe`
+   - On Mac: `build/bin/new-api-desktop.app`
+   - On Linux: `build/bin/new-api-desktop`
 
-## 🛠️ Development
+## Configuration
 
-1. **Install Dependencies**:
-   ```bash
-   go mod tidy
-   cd frontend && npm install
-   ```
+The application automatically uses a SQLite database. The database file `new-api.db` is stored in your operating system's standard user configuration directory:
+- **Windows**: `%APPDATA%\new-api`
+- **Linux**: `~/.config/new-api`
+- **macOS**: `~/Library/Application Support/new-api`
 
-2. **Run Dev Mode**:
-   ```bash
-   wails dev
-   ```
+## Development
 
-## 📂 Project Structure
+To run the application in development mode (with hot reload):
 
-- `frontend/`: React frontend (adapted from New API web).
-- `backend/`: Go backend service (New API core).
-- `main.go`: Wails application entry point.
-
-## 🙏 Credits
-
-Based on [New API](https://github.com/Calcium-Ion/new-api) by Calcium-Ion.
-Original [One API](https://github.com/songquanpeng/one-api) by songquanpeng.
-
-## 📄 License
-
-Apache License 2.0
+```bash
+wails dev
+```
